@@ -1,4 +1,5 @@
 resources/
 .idea/
 .venv/
+__pycache__/
 temp.*
