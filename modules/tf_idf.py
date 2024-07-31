@@ -1,20 +1,19 @@
-import asyncio
 import pickle
 import re
 from pathlib import Path
-import eel
+
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 
-from modules.clip_connector import Connector
+from modules.dd_connector import DeepDanbooruConnector
 
 # Paths for resource files
 RESOURCE_PATH = Path("resources")
 DATA_PATH = RESOURCE_PATH / "data"
-CORPUS_FILE_PATH = RESOURCE_PATH / "corpus.pkl"
-TFIDF_MODEL_FILE_PATH = RESOURCE_PATH / "tfidf_model.pkl"
+CORPUS_FILE_PATH_DD = RESOURCE_PATH / "corpus_dd.pkl"
+TFIDF_MODEL_FILE_PATH_DD = RESOURCE_PATH / "tfidf_model_dd.pkl"
 
 
 class TFIDFHandler:
@@ -22,45 +21,42 @@ class TFIDFHandler:
         self.corpus = None
         self.tfidf_model = None
         self.tfidf_matrix = None
-        self.connector = Connector()
 
-        if rebuild or not CORPUS_FILE_PATH.exists() or not TFIDF_MODEL_FILE_PATH.exists():
-            asyncio.run(self._build_and_save_model())
+        self.connector = DeepDanbooruConnector()
+        self.corpus_file_path = CORPUS_FILE_PATH_DD
+        self.tfidf_model_file_path = TFIDF_MODEL_FILE_PATH_DD
+
+        if rebuild or not self.corpus_file_path.exists() or not self.tfidf_model_file_path.exists():
+            self._build_and_save_model()
         else:
-            self.corpus = load_object(CORPUS_FILE_PATH)
-            self.tfidf_model = load_object(TFIDF_MODEL_FILE_PATH)
+            self.corpus = load_object(self.corpus_file_path)
+            self.tfidf_model = load_object(self.tfidf_model_file_path)
             self.tfidf_matrix = self.tfidf_model.transform(self.corpus)
 
-    async def build_corpus(self) -> list:
+    def build_corpus(self) -> list:
         """Build a corpus from the data in DATA_PATH"""
         raw_corpus = []
         for path in tqdm(list(DATA_PATH.glob("*.jpg"))):
-            raw_corpus.append(clean_string(await self.connector.interrogate_clip(path)))
+            raw_corpus.append(clean_string(self.connector.interrogate(path)))
         return raw_corpus
 
-    async def _build_and_save_model(self):
-        self.corpus = await self.build_corpus()
+    def _build_and_save_model(self):
+        self.corpus = self.build_corpus()
         self.tfidf_model = build_tfidf_model(self.corpus)
         self.tfidf_matrix = self.tfidf_model.transform(self.corpus)
-        save_object(self.corpus, CORPUS_FILE_PATH)
-        save_object(self.tfidf_model, TFIDF_MODEL_FILE_PATH)
-
-    async def get_caption_async(self, image_path) -> str:
-        new_caption = await self.connector.interrogate_clip(image_path)
-        return clean_string(new_caption)
+        save_object(self.corpus, self.corpus_file_path)
+        save_object(self.tfidf_model, self.tfidf_model_file_path)
 
     def get_caption(self, image_path) -> str:
-        loop = asyncio.get_event_loop()
-        new_caption = loop.run_until_complete(self.get_caption_async(image_path))
+        new_caption = self.connector.interrogate(image_path)
         return clean_string(new_caption)
 
     def score_image(self, image_path: Path) -> int:
         """Score a new image by its similarity to the corpus"""
-        loop = asyncio.get_event_loop()
-        new_caption = loop.run_until_complete(self.get_caption_async(image_path))
+        new_caption = self.get_caption(image_path)
         new_caption_tfidf = self.tfidf_model.transform([new_caption])
         similarity_scores = cosine_similarity(new_caption_tfidf, self.tfidf_matrix)
-        max_similarity = np.max(similarity_scores)  # Get the maximum similarity score
+        max_similarity = np.max(similarity_scores)  # Get the average similarity score
         score = int(max_similarity * 100)  # Convert to percentage
         return score
 
@@ -105,4 +101,4 @@ def clean_string(text: str) -> str:
 
 
 if __name__ == "__main__":
-    tfidf_handler = TFIDFHandler(rebuild=False)
+    tfidf_handler = TFIDFHandler(method='deepdanbooru', rebuild=True)  # or 'deepdanbooru'

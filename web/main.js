@@ -17,11 +17,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const files = event.dataTransfer.files;
         handleFiles(files);
     });
+
+    fileElem.addEventListener('change', () => {
+        handleFiles(fileElem.files);
+    });
 });
 
 async function handleFiles(files) {
     if (files.length > 0) {
         const file = files[0];
+
+        // Display the image immediately
+        const displayImage = document.getElementById('display-image');
+        displayImage.src = URL.createObjectURL(file);
+        displayImage.style.display = 'block';
+
+        // Perform calculations in the background
         const data = await readFileAsBase64(file);
         const caption = await eel.get_caption(data)();
         const score = await eel.score_image(data)();

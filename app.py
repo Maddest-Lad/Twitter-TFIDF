@@ -1,11 +1,14 @@
-import eel
+import base64
+from io import BytesIO
 from pathlib import Path
+from PIL import Image
+import eel
 from modules.tf_idf import TFIDFHandler
 
 # Initialize Eel
 eel.init('web')
 
-tfidf_handler = TFIDFHandler(rebuild=False)
+tfidf_handler = TFIDFHandler(method='deepdanbooru', rebuild=False)
 
 
 @eel.expose
@@ -23,12 +26,13 @@ def score_image(image_base64):
 
 
 def decode_image(image_base64):
-    import base64
-    from PIL import Image
-    from io import BytesIO
-
     image_data = base64.b64decode(image_base64.split(',')[1])
     image = Image.open(BytesIO(image_data))
+
+    # Convert image to RGB if not already in RGB mode
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
     image_path = Path("temp.jpg")
     image.save(image_path)
     return image_path

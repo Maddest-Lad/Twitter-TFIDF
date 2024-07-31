@@ -8,16 +8,19 @@
 </head>
 <body>
     <h1>Image Similarity Scorer</h1>
-    <div id="drop-area">
-        <p>Drag an image here</p>
-        <input type="file" id="fileElem" accept="image/*" onchange="handleFiles(this.files)">
-        <label class="button" for="fileElem">Select Image</label>
-    </div>
-    <div id="result">
-        <h2>Caption:</h2>
-        <p id="caption"></p>
-        <h2>Similarity Score:</h2>
-        <p id="score"></p>
+    <div id="container">
+        <div id="drop-area">
+            <p>Drag an image here</p>
+            <input type="file" id="fileElem" accept="image/*" onchange="handleFiles(this.files)" hidden>
+            <label class="button" for="fileElem">Select Image</label>
+            <img id="display-image" src="" alt="Your Image" />
+        </div>
+        <div id="result">
+            <h2>Caption:</h2>
+            <p id="caption"></p>
+            <h2>Similarity Score:</h2>
+            <p id="score"></p>
+        </div>
     </div>
 </body>
 </html>
