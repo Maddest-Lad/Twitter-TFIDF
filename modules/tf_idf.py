@@ -51,15 +51,23 @@ class TFIDFHandler:
         new_caption = self.connector.interrogate(image_path)
         return clean_string(new_caption)
 
-    def score_image(self, image_path: Path) -> int:
+    def score_image(self, image_path: Path) -> dict:
         """Score a new image by its similarity to the corpus"""
         new_caption = self.get_caption(image_path)
         new_caption_tfidf = self.tfidf_model.transform([new_caption])
-        similarity_scores = cosine_similarity(new_caption_tfidf, self.tfidf_matrix)
-        max_similarity = np.max(similarity_scores)  # Get the average similarity score
-        score = int(max_similarity * 100)  # Convert to percentage
-        return score
+        similarity_scores = cosine_similarity(new_caption_tfidf, self.tfidf_matrix).flatten()
 
+        max_similarity = np.max(similarity_scores)  # Get the maximum similarity score
+        avg_similarity = np.mean(similarity_scores)  # Get the average similarity score
+        median_similarity = np.median(similarity_scores)  # Get the median similarity score
+
+        scores = {
+            "max_similarity": int(max_similarity * 100),  # Convert to percentage
+            "avg_similarity": int(avg_similarity * 100),  # Convert to percentage
+            "median_similarity": int(median_similarity * 100),  # Convert to percentage
+        }
+
+        return scores
 
 def build_tfidf_model(corpus: list) -> TfidfVectorizer:
     """Build a TF-IDF model from a corpus"""
@@ -82,7 +90,7 @@ def load_object(filename: Path):
 
 
 def clean_string(text: str) -> str:
-    """Cleans a string by lowercasing, removing emojis/symbols/flags, and replacing non-standard characters with spaces"""
+    """Cleans a string by lowercasing, removing emojis/symbols/flags, and replacing non-standard characters w/ spaces"""
     text = text.lower()
     text = re.sub(r"[^a-zA-Z?.!,_-]+", " ", text)
     text = re.sub(r'<.*?>', '', text)  # Remove HTML tags
@@ -101,4 +109,4 @@ def clean_string(text: str) -> str:
 
 
 if __name__ == "__main__":
-    tfidf_handler = TFIDFHandler(method='deepdanbooru', rebuild=True)  # or 'deepdanbooru'
+    tfidf_handler = TFIDFHandler(rebuild=False)

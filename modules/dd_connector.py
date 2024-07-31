@@ -10,7 +10,7 @@ TAG_PATH = Path('resources/dataset/tags.txt')
 
 # Parameters
 TAGS = [line.strip() for line in open(TAG_PATH).readlines()]
-THRESHOLD = 0.5
+THRESHOLD = 0.75
 
 
 class DeepDanbooruConnector:

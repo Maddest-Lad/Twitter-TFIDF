@@ -35,9 +35,12 @@ async function handleFiles(files) {
         // Perform calculations in the background
         const data = await readFileAsBase64(file);
         const caption = await eel.get_caption(data)();
-        const score = await eel.score_image(data)();
+        const scores = await eel.score_image(data)();
+
         document.getElementById('caption').textContent = caption;
-        document.getElementById('score').textContent = `${score}%`;
+        document.getElementById('max-similarity').textContent = `Max Similarity: ${scores.max_similarity}%`;
+        document.getElementById('avg-similarity').textContent = `Avg Similarity: ${scores.avg_similarity}%`;
+        document.getElementById('median-similarity').textContent = `Median Similarity: ${scores.median_similarity}%`;
     }
 }
 

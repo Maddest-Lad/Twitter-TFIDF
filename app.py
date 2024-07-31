@@ -7,9 +7,7 @@ from modules.tf_idf import TFIDFHandler
 
 # Initialize Eel
 eel.init('web')
-
-tfidf_handler = TFIDFHandler(method='deepdanbooru', rebuild=False)
-
+tfidf_handler = TFIDFHandler(rebuild=False)
 
 @eel.expose
 def get_caption(image_base64):
