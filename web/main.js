@@ -1,0 +1,40 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const dropArea = document.getElementById('drop-area');
+    const fileElem = document.getElementById('fileElem');
+
+    dropArea.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropArea.classList.add('highlight');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('highlight');
+    });
+
+    dropArea.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropArea.classList.remove('highlight');
+        const files = event.dataTransfer.files;
+        handleFiles(files);
+    });
+});
+
+async function handleFiles(files) {
+    if (files.length > 0) {
+        const file = files[0];
+        const data = await readFileAsBase64(file);
+        const caption = await eel.get_caption(data)();
+        const score = await eel.score_image(data)();
+        document.getElementById('caption').textContent = caption;
+        document.getElementById('score').textContent = `${score}%`;
+    }
+}
+
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}

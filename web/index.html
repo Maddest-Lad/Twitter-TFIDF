@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Similarity Scorer</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+    <h1>Image Similarity Scorer</h1>
+    <div id="drop-area">
+        <p>Drag an image here</p>
+        <input type="file" id="fileElem" accept="image/*" onchange="handleFiles(this.files)">
+        <label class="button" for="fileElem">Select Image</label>
+    </div>
+    <div id="result">
+        <h2>Caption:</h2>
+        <p id="caption"></p>
+        <h2>Similarity Score:</h2>
+        <p id="score"></p>
+    </div>
+</body>
+</html>
